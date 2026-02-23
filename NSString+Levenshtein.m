@@ -12,6 +12,21 @@
 @implementation NSString (Levenshtein)
 
 static NSRegularExpression* compileRegex(NSString *pattern) {
+    if (!pattern || [pattern length] == 0) {
+        return nil;
+    }
+
+    static NSCache *regexCache = nil;
+    if (regexCache == nil) {
+        regexCache = [[NSCache alloc] init];
+        [regexCache setCountLimit:512];
+    }
+
+    NSRegularExpression *cachedRegex = [regexCache objectForKey:pattern];
+    if (cachedRegex) {
+        return cachedRegex;
+    }
+
     NSError *error = nil;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern
                                                                             options:0
@@ -19,6 +34,7 @@ static NSRegularExpression* compileRegex(NSString *pattern) {
     if (error) {
         return nil;
     }
+    [regexCache setObject:regex forKey:pattern];
     return regex;
 }
 

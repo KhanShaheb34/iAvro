@@ -7,7 +7,6 @@
 
 #import "Database.h"
 #import "RegexParser.h"
-#import "NSString+Levenshtein.h"
 #import <sqlite3.h>
 
 static Database* sharedInstance = nil;
@@ -180,6 +179,13 @@ static Database* sharedInstance = nil;
     // Left Most Character
     unichar lmc = [[term lowercaseString] characterAtIndex:0];
     NSString* regex = [NSString stringWithFormat:@"^%@$", [[RegexParser sharedInstance] parse:term]];
+    NSError *regexError = nil;
+    NSRegularExpression *compiledRegex = [NSRegularExpression regularExpressionWithPattern:regex
+                                                                                    options:0
+                                                                                      error:&regexError];
+    if (regexError || !compiledRegex) {
+        return [NSArray array];
+    }
     NSMutableArray* tableList = [[NSMutableArray alloc] initWithCapacity:0];
     NSMutableSet* suggestions = [[NSMutableSet alloc] initWithCapacity:0];
     
@@ -295,7 +301,8 @@ static Database* sharedInstance = nil;
     for (NSString* table in tableList) {
         NSArray* tableData = [_db objectForKey:table];
         for (NSString* tmpString in tableData) {
-            if ([tmpString isMatchedByRegex:regex]) {
+            NSRange searchRange = NSMakeRange(0, [tmpString length]);
+            if ([compiledRegex firstMatchInString:tmpString options:0 range:searchRange]) {
                 [suggestions addObject:tmpString];
             }
         }

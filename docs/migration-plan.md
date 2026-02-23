@@ -91,7 +91,7 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
 ## Current status
 
 - **Phase 1 is complete** (build + install + manual typing validation on Apple Silicon).
-- Next focus: **Phase 2**, starting with fast-typing latency/performance.
+- **Phase 2 is now in progress**, starting with fast-typing latency/performance.
 
 ## Phase 1 progress (2026-02-23)
 
@@ -106,3 +106,13 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
   - Manual smoke test passed in real typing usage (composition, candidate list, selection/commit, preferences).
 - Known follow-up (Phase 2):
   - Typing very fast can introduce noticeable lag (existing issue from legacy version; now tracked for profiling + optimization).
+
+## Phase 2 progress (2026-02-23)
+
+- Completed:
+  - Added regex compilation caching in `NSString+Levenshtein` to avoid recompiling identical patterns across hot paths.
+  - Optimized dictionary suggestion sorting by precomputing Levenshtein distances once per candidate before sorting.
+  - Verified project still builds successfully with `xcodebuild` using scheme `Avro Silicon`.
+- Next:
+  - Add lightweight runtime timing instrumentation around candidate-generation pipeline.
+  - Capture baseline latency under burst typing and target highest-cost stages.

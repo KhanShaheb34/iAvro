@@ -91,10 +91,16 @@ static Suggestion* sharedInstance = nil;
                 if (autoCorrect && [dicList containsObject:autoCorrect]) {
                     [_suggestions removeObjectIdenticalTo:autoCorrect];
                 }
+                // Precompute distance once per candidate to avoid repeated work during sort.
+                NSMutableDictionary *distanceByCandidate = [NSMutableDictionary dictionaryWithCapacity:[dicList count]];
+                for (NSString *candidate in dicList) {
+                    int distance = [paresedString computeLevenshteinDistanceWithString:candidate];
+                    [distanceByCandidate setObject:[NSNumber numberWithInt:distance] forKey:candidate];
+                }
                 // Sort dicList based on edit distance
                 NSArray* sortedDicList = [dicList sortedArrayUsingComparator:^NSComparisonResult(id left, id right) {
-                    int dist1 = [paresedString computeLevenshteinDistanceWithString:(NSString*)left];
-                    int dist2 = [paresedString computeLevenshteinDistanceWithString:(NSString*)right];
+                    int dist1 = [[distanceByCandidate objectForKey:left] intValue];
+                    int dist2 = [[distanceByCandidate objectForKey:right] intValue];
                     if (dist1 < dist2) {
                         return NSOrderedAscending;
                     }
