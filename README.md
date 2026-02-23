@@ -1,34 +1,110 @@
-Installation
-------------
+# Avro Silicon
 
-1. Download the `tar.gz` file from [Releases Section](https://github.com/torifat/iAvro/releases)
-2. Extract the `tar.gz` & copy `Avro Silicon.app` file
-3. Goto `Finder` & press `⌘⇧G`, paste `~/Library/Input Methods/` & `Go`
-4. Paste the `Avro Silicon.app` file here
-5. Goto `System Preferences -> Language & Text -> Input Sources` & Check `Avro Silicon` from the list
-6. Look Above :P
+Avro Silicon is a modernized macOS Bengali input method based on iAvro, updated to run reliably on Apple Silicon while preserving the original typing behavior.
 
-Development
------------
+## Current Status
 
-Run regression fixtures:
+- Phase 1: complete (modern build/runtime compatibility)
+- Phase 2: complete (regression checks, perf instrumentation, release checklist)
+- Phase 3: in progress (CI + release automation started)
+
+See details in:
+
+- `docs/migration-plan.md`
+- `docs/release-checklist.md`
+
+## Installation (From Release)
+
+1. Download the latest release artifact (`.tar.gz`) from this repository’s Releases page.
+2. Extract it to get `Avro Silicon.app`.
+3. Copy the app to `~/Library/Input Methods/`.
+4. Open System Settings > Keyboard > Input Sources and add `Avro Silicon` under Bangla.
+
+If the new app does not appear immediately, run:
+
+```bash
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f ~/Library/Input\ Methods/Avro\ Silicon.app
+killall TextInputMenuAgent
+```
+
+## Build (Local)
+
+Debug build:
+
+```bash
+xcodebuild \
+  -project AvroKeyboard.xcodeproj \
+  -scheme "Avro Silicon" \
+  -configuration Debug \
+  -sdk macosx \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Release build:
+
+```bash
+xcodebuild \
+  -project AvroKeyboard.xcodeproj \
+  -scheme "Avro Silicon" \
+  -configuration Release \
+  -sdk macosx \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+## Development Checks
+
+Run fixture-based regression tests:
 
 ```bash
 scripts/run_regression_tests.sh
 ```
 
-Summarize recent perf logs:
+Summarize recent performance logs:
 
 ```bash
 scripts/perf_report.sh 10m
 ```
 
-Migration + release docs:
+Enable perf logs (debug builds):
 
-- `docs/migration-plan.md`
-- `docs/release-checklist.md`
+```bash
+defaults write com.omicronlab.inputmethod.AvroSilicon EnablePerfLog -bool true
+```
 
-CI:
+## CI and Release Automation
 
-- `.github/workflows/ci.yml`
-- `.github/workflows/release.yml` (publishes release artifacts on `v*` tags)
+- CI workflow: `.github/workflows/ci.yml`
+  - Runs regression tests
+  - Runs macOS build
+
+- Release workflow: `.github/workflows/release.yml`
+  - Triggers on tags matching `v*`
+  - Builds `Release` app bundle
+  - Publishes `Avro-Silicon-<tag>.tar.gz` and `.sha256` to GitHub Releases
+
+## Creating a Release
+
+1. Ensure local checks pass.
+2. Push your commits.
+3. Create and push a version tag:
+
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+The release workflow will publish artifacts automatically.
+
+## Troubleshooting
+
+No perf data in report:
+
+- Ensure `EnablePerfLog` is enabled.
+- Generate typing activity, then run `scripts/perf_report.sh 5m`.
+
+Input source not visible:
+
+- Confirm app path is `~/Library/Input Methods/Avro Silicon.app`.
+- Run `lsregister` + `killall TextInputMenuAgent` commands above.
