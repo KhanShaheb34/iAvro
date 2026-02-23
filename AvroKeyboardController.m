@@ -14,6 +14,18 @@
 #import "AvroParser.h"
 #import "AutoCorrect.h"
 
+#ifdef DEBUG
+static BOOL AvroPerfLoggingEnabled(void) {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+}
+
+static double AvroPerfNowMs(void) {
+    return CFAbsoluteTimeGetCurrent() * 1000.0;
+}
+
+#define AVRO_PERF_LOG(fmt, ...) NSLog((@"[AvroPerf] " fmt), ##__VA_ARGS__)
+#endif
+
 @implementation AvroKeyboardController
 
 @synthesize prefix = _prefix, term = _term, suffix = _suffix;
@@ -44,6 +56,11 @@
 }
 
 - (void)findCurrentCandidates {
+#ifdef DEBUG
+    double perfStartMs = AvroPerfNowMs();
+    double perfSuggestionMs = 0.0;
+    NSUInteger perfTermLength = 0;
+#endif
     [_currentCandidates removeAllObjects];
     if (_composedBuffer && [_composedBuffer length] > 0) {
         NSString* regex = @"(^(?::`|\\.`|[-\\]\\\\~!@#&*()_=+\\[{}'\";<>/?|.,])*?(?=(?:,{2,}))|^(?::`|\\.`|[-\\]\\\\~!@#&*()_=+\\[{}'\";<>/?|.,])*)(.*?(?:,,)*)((?::`|\\.`|[-\\]\\\\~!@#&*()_=+\\[{}'\";<>/?|.,])*$)";
@@ -53,8 +70,14 @@
             [self setPrefix:[[AvroParser sharedInstance] parse:[items objectAtIndex:1]]];
             [self setTerm:[items objectAtIndex:2]];
             [self setSuffix:[[AvroParser sharedInstance] parse:[items objectAtIndex:3]]];
-            
+#ifdef DEBUG
+            perfTermLength = [[self term] length];
+            double suggestionStartMs = AvroPerfNowMs();
+#endif
             _currentCandidates = [[[Suggestion sharedInstance] getList:[self term]] retain];
+#ifdef DEBUG
+            perfSuggestionMs = AvroPerfNowMs() - suggestionStartMs;
+#endif
             if (_currentCandidates && [_currentCandidates count] > 0) {
                 NSString* prevString = nil;
                 if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
@@ -85,9 +108,24 @@
             }
         }
     }
+#ifdef DEBUG
+    if (AvroPerfLoggingEnabled()) {
+        double totalMs = AvroPerfNowMs() - perfStartMs;
+        if (totalMs >= 1.0) {
+            AVRO_PERF_LOG(@"findCurrentCandidates total=%.2fms suggestion=%.2fms termLen=%lu candidates=%lu",
+                          totalMs,
+                          perfSuggestionMs,
+                          (unsigned long)perfTermLength,
+                          (unsigned long)[_currentCandidates count]);
+        }
+    }
+#endif
 }
 
 - (void)updateCandidatesPanel {
+#ifdef DEBUG
+    double perfStartMs = AvroPerfNowMs();
+#endif
     if (_currentCandidates && [_currentCandidates count] > 0) {
         NSUserDefaults *defaultsDictionary = [NSUserDefaults standardUserDefaults];
         
@@ -113,6 +151,17 @@
     else {
         [[Candidates sharedInstance] hide];
     }
+#ifdef DEBUG
+    if (AvroPerfLoggingEnabled()) {
+        double totalMs = AvroPerfNowMs() - perfStartMs;
+        if (totalMs >= 1.0) {
+            AVRO_PERF_LOG(@"updateCandidatesPanel total=%.2fms candidates=%lu visible=%d",
+                          totalMs,
+                          (unsigned long)[_currentCandidates count],
+                          [[Candidates sharedInstance] isVisible]);
+        }
+    }
+#endif
 }
 
 - (NSArray*)candidates:(id)sender {
@@ -206,20 +255,64 @@
         return NO;
     }
     else {
+#ifdef DEBUG
+        double perfStartMs = AvroPerfNowMs();
+#endif
         [_composedBuffer appendString:string];
+#ifdef DEBUG
+        double findStartMs = AvroPerfNowMs();
+#endif
         [self findCurrentCandidates];
+#ifdef DEBUG
+        double findMs = AvroPerfNowMs() - findStartMs;
+        double compositionStartMs = AvroPerfNowMs();
+#endif
         [self updateComposition];
+#ifdef DEBUG
+        double compositionMs = AvroPerfNowMs() - compositionStartMs;
+        double panelStartMs = AvroPerfNowMs();
+#endif
         [self updateCandidatesPanel];
+#ifdef DEBUG
+        double panelMs = AvroPerfNowMs() - panelStartMs;
+        if (AvroPerfLoggingEnabled()) {
+            double totalMs = AvroPerfNowMs() - perfStartMs;
+            if (totalMs >= 1.0) {
+                AVRO_PERF_LOG(@"inputText total=%.2fms find=%.2fms composition=%.2fms panel=%.2fms key='%@' buffer=%lu candidates=%lu",
+                              totalMs,
+                              findMs,
+                              compositionMs,
+                              panelMs,
+                              string,
+                              (unsigned long)[_composedBuffer length],
+                              (unsigned long)[_currentCandidates count]);
+            }
+        }
+#endif
         return YES;
     }
 }
 
 - (void)deleteBackward:(id)sender {
+#ifdef DEBUG
+    double perfStartMs = AvroPerfNowMs();
+#endif
     // We're called only when [compositionBuffer length] > 0
     [_composedBuffer deleteCharactersInRange:NSMakeRange([_composedBuffer length] - 1, 1)];
     [self findCurrentCandidates];
     [self updateComposition];
     [self updateCandidatesPanel];
+#ifdef DEBUG
+    if (AvroPerfLoggingEnabled()) {
+        double totalMs = AvroPerfNowMs() - perfStartMs;
+        if (totalMs >= 1.0) {
+            AVRO_PERF_LOG(@"deleteBackward total=%.2fms buffer=%lu candidates=%lu",
+                          totalMs,
+                          (unsigned long)[_composedBuffer length],
+                          (unsigned long)[_currentCandidates count]);
+        }
+    }
+#endif
 }
 
 - (void)insertTab:(id)sender {

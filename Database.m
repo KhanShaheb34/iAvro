@@ -9,6 +9,18 @@
 #import "RegexParser.h"
 #import <sqlite3.h>
 
+#ifdef DEBUG
+static BOOL DatabasePerfLoggingEnabled(void) {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+}
+
+static double DatabasePerfNowMs(void) {
+    return CFAbsoluteTimeGetCurrent() * 1000.0;
+}
+
+#define DATABASE_PERF_LOG(fmt, ...) NSLog((@"[AvroPerf] " fmt), ##__VA_ARGS__)
+#endif
+
 static Database* sharedInstance = nil;
 
 @implementation Database
@@ -176,13 +188,27 @@ static Database* sharedInstance = nil;
 }
 
 - (NSArray*)find:(NSString*)term {
+#ifdef DEBUG
+    double perfStartMs = DatabasePerfNowMs();
+    double perfRegexMs = 0.0;
+    double perfScanMs = 0.0;
+    NSUInteger perfTableCount = 0;
+    NSUInteger perfScannedCount = 0;
+    NSUInteger perfMatchedCount = 0;
+#endif
     // Left Most Character
     unichar lmc = [[term lowercaseString] characterAtIndex:0];
+#ifdef DEBUG
+    double regexStartMs = DatabasePerfNowMs();
+#endif
     NSString* regex = [NSString stringWithFormat:@"^%@$", [[RegexParser sharedInstance] parse:term]];
     NSError *regexError = nil;
     NSRegularExpression *compiledRegex = [NSRegularExpression regularExpressionWithPattern:regex
                                                                                     options:0
                                                                                       error:&regexError];
+#ifdef DEBUG
+    perfRegexMs = DatabasePerfNowMs() - regexStartMs;
+#endif
     if (regexError || !compiledRegex) {
         return [NSArray array];
     }
@@ -297,19 +323,48 @@ static Database* sharedInstance = nil;
         default:
             break;
     }
+#ifdef DEBUG
+    perfTableCount = [tableList count];
+    double scanStartMs = DatabasePerfNowMs();
+#endif
     
     for (NSString* table in tableList) {
         NSArray* tableData = [_db objectForKey:table];
         for (NSString* tmpString in tableData) {
+#ifdef DEBUG
+            ++perfScannedCount;
+#endif
             NSRange searchRange = NSMakeRange(0, [tmpString length]);
             if ([compiledRegex firstMatchInString:tmpString options:0 range:searchRange]) {
                 [suggestions addObject:tmpString];
+#ifdef DEBUG
+                ++perfMatchedCount;
+#endif
             }
         }
     }
+#ifdef DEBUG
+    perfScanMs = DatabasePerfNowMs() - scanStartMs;
+#endif
     
     [tableList release];
     [suggestions autorelease];
+
+#ifdef DEBUG
+    if (DatabasePerfLoggingEnabled()) {
+        double totalMs = DatabasePerfNowMs() - perfStartMs;
+        if (totalMs >= 1.0) {
+            DATABASE_PERF_LOG(@"database.find total=%.2fms regex=%.2fms scan=%.2fms term='%@' tables=%lu scanned=%lu matched=%lu",
+                              totalMs,
+                              perfRegexMs,
+                              perfScanMs,
+                              term,
+                              (unsigned long)perfTableCount,
+                              (unsigned long)perfScannedCount,
+                              (unsigned long)perfMatchedCount);
+        }
+    }
+#endif
     
     return [suggestions allObjects];
 }

@@ -13,6 +13,18 @@
 #import "NSString+Levenshtein.h"
 #import "CacheManager.h"
 
+#ifdef DEBUG
+static BOOL SuggestionPerfLoggingEnabled(void) {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+}
+
+static double SuggestionPerfNowMs(void) {
+    return CFAbsoluteTimeGetCurrent() * 1000.0;
+}
+
+#define SUGGESTION_PERF_LOG(fmt, ...) NSLog((@"[AvroPerf] " fmt), ##__VA_ARGS__)
+#endif
+
 static Suggestion* sharedInstance = nil;
 
 @implementation Suggestion
@@ -67,16 +79,38 @@ static Suggestion* sharedInstance = nil;
 }
 
 - (NSMutableArray*)getList:(NSString*)term {
+#ifdef DEBUG
+    double perfStartMs = SuggestionPerfNowMs();
+    double perfParseMs = 0.0;
+    double perfCacheMs = 0.0;
+    double perfDictionaryMs = 0.0;
+    double perfSuffixMs = 0.0;
+#endif
     if (term && [term length] == 0) {
         return _suggestions;
     }
     
     // Suggestions from Default Parser
+#ifdef DEBUG
+    double parseStartMs = SuggestionPerfNowMs();
+#endif
     NSString* paresedString = [[AvroParser sharedInstance] parse:term];
+#ifdef DEBUG
+    perfParseMs = SuggestionPerfNowMs() - parseStartMs;
+#endif
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
         // Saving humanity by reducing a few CPU cycles
+#ifdef DEBUG
+        double cacheStartMs = SuggestionPerfNowMs();
+#endif
         [_suggestions addObjectsFromArray:[[CacheManager sharedInstance] arrayForKey:term]];
+#ifdef DEBUG
+        perfCacheMs = SuggestionPerfNowMs() - cacheStartMs;
+#endif
         if (_suggestions && [_suggestions count] == 0) {
+#ifdef DEBUG
+            double dictionaryStartMs = SuggestionPerfNowMs();
+#endif
             // Suggestions form AutoCorrect
             NSString* autoCorrect = [[AutoCorrect sharedInstance] find:term];
             if (autoCorrect) {
@@ -114,12 +148,18 @@ static Suggestion* sharedInstance = nil;
             }
             
             [[CacheManager sharedInstance] setArray:[[_suggestions copy] autorelease] forKey:term];
+#ifdef DEBUG
+            perfDictionaryMs = SuggestionPerfNowMs() - dictionaryStartMs;
+#endif
         }
         
         // Suggestions with Suffix
         NSInteger i;
         BOOL alreadySelected = FALSE;
         [[CacheManager sharedInstance] removeAllBase];
+#ifdef DEBUG
+        double suffixStartMs = SuggestionPerfNowMs();
+#endif
         for (i = [term length]-1; i > 0; --i) {
             NSString* suffix = [[Database sharedInstance] banglaForSuffix:[[term substringFromIndex:i] lowercaseString]];
             if (suffix) {
@@ -177,11 +217,30 @@ static Suggestion* sharedInstance = nil;
                 }
             }
         }
+#ifdef DEBUG
+        perfSuffixMs = SuggestionPerfNowMs() - suffixStartMs;
+#endif
     }
     
     if ([_suggestions containsObject:paresedString] == NO) {
         [_suggestions addObject:paresedString];
     }
+
+#ifdef DEBUG
+    if (SuggestionPerfLoggingEnabled()) {
+        double totalMs = SuggestionPerfNowMs() - perfStartMs;
+        if (totalMs >= 1.0) {
+            SUGGESTION_PERF_LOG(@"suggestions total=%.2fms parse=%.2fms cache=%.2fms dictionary=%.2fms suffix=%.2fms term='%@' count=%lu",
+                                totalMs,
+                                perfParseMs,
+                                perfCacheMs,
+                                perfDictionaryMs,
+                                perfSuffixMs,
+                                term,
+                                (unsigned long)[_suggestions count]);
+        }
+    }
+#endif
     
     return _suggestions;
 }
