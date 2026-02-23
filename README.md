@@ -17,6 +17,12 @@ Run regression fixtures:
 scripts/run_regression_tests.sh
 ```
 
+Summarize recent perf logs:
+
+```bash
+scripts/perf_report.sh 10m
+```
+
 Migration + release docs:
 
 - `docs/migration-plan.md`

@@ -43,6 +43,9 @@ The suite validates fixture-driven parser/database/suggestion behavior from:
 # recent performance entries
 log show --last 10m --style compact --predicate 'eventMessage CONTAINS "[AvroPerf]"'
 
+# summarized perf report
+scripts/perf_report.sh 10m
+
 # enable logs
 defaults write com.omicronlab.inputmethod.AvroSilicon EnablePerfLog -bool true
 ```

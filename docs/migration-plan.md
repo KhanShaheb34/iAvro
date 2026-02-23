@@ -126,8 +126,10 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
     - fixtures: `tests/fixtures/regression_cases.json`
     - runner: `tests/regression_runner.m`
     - command: `scripts/run_regression_tests.sh`
+  - Added perf summary helper to standardize timing analysis from unified logs:
+    - command: `scripts/perf_report.sh <window>`
   - Added compatibility and release checklist: `docs/release-checklist.md`.
   - Verified project still builds successfully with `xcodebuild` using scheme `Avro Silicon`.
 - Next:
-  - Re-capture latency under burst typing and compare against current baseline.
+  - Re-capture latency under burst typing on latest build and compare via `scripts/perf_report.sh`.
   - Execute full manual candidate-panel edge-case checklist across multiple host apps.
