@@ -91,7 +91,8 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
 ## Current status
 
 - **Phase 1 is complete** (build + install + manual typing validation on Apple Silicon).
-- **Phase 2 is now in progress**, starting with fast-typing latency/performance.
+- **Phase 2 is complete** (tests, profiling, checklist, and manual validation complete).
+- **Phase 3 is in progress**, starting with CI build/test automation.
 
 ## Phase 1 progress (2026-02-23)
 
@@ -130,6 +131,16 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
     - command: `scripts/perf_report.sh <window>`
   - Added compatibility and release checklist: `docs/release-checklist.md`.
   - Verified project still builds successfully with `xcodebuild` using scheme `Avro Silicon`.
+  - Re-captured latency under burst typing via `scripts/perf_report.sh`.
+  - Completed manual candidate-panel edge-case validation in real typing usage.
+
+## Phase 3 progress (2026-02-23)
+
+- Completed:
+  - Added GitHub Actions workflow for continuous verification:
+    - file: `.github/workflows/ci.yml`
+    - runs regression fixtures (`scripts/run_regression_tests.sh`)
+    - runs macOS build (`xcodebuild ... CODE_SIGNING_ALLOWED=NO`)
 - Next:
-  - Re-capture latency under burst typing on latest build and compare via `scripts/perf_report.sh`.
-  - Execute full manual candidate-panel edge-case checklist across multiple host apps.
+  - Add release tagging workflow (draft artifacts + release notes template).
+  - Evaluate notarization/distribution hardening path.

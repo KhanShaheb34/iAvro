@@ -21,6 +21,10 @@ The suite validates fixture-driven parser/database/suggestion behavior from:
 
 - `tests/fixtures/regression_cases.json`
 
+CI workflow:
+
+- `.github/workflows/ci.yml`
+
 ## Manual IME Checklist (Per Release)
 
 1. Build and install the app bundle to `~/Library/Input Methods/`.
@@ -57,3 +61,4 @@ Ship only if:
 1. `scripts/run_regression_tests.sh` passes.
 2. `xcodebuild` succeeds for `Avro Silicon`.
 3. Manual IME checklist passes on the current Apple Silicon macOS version.
+4. GitHub Actions CI (`.github/workflows/ci.yml`) is green on the release commit.

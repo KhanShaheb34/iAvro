@@ -27,3 +27,7 @@ Migration + release docs:
 
 - `docs/migration-plan.md`
 - `docs/release-checklist.md`
+
+CI:
+
+- `.github/workflows/ci.yml`
