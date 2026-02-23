@@ -141,6 +141,10 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
     - file: `.github/workflows/ci.yml`
     - runs regression fixtures (`scripts/run_regression_tests.sh`)
     - runs macOS build (`xcodebuild ... CODE_SIGNING_ALLOWED=NO`)
+  - Added GitHub Actions release workflow:
+    - file: `.github/workflows/release.yml`
+    - triggers on `v*` tags
+    - builds `Release` app bundle
+    - publishes `.tar.gz` and `.sha256` assets to GitHub Releases
 - Next:
-  - Add release tagging workflow (draft artifacts + release notes template).
   - Evaluate notarization/distribution hardening path.

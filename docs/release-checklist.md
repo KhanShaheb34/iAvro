@@ -62,3 +62,4 @@ Ship only if:
 2. `xcodebuild` succeeds for `Avro Silicon`.
 3. Manual IME checklist passes on the current Apple Silicon macOS version.
 4. GitHub Actions CI (`.github/workflows/ci.yml`) is green on the release commit.
+5. Push a semantic version tag (`v*`) and confirm `.github/workflows/release.yml` publishes the `.tar.gz` + `.sha256` assets.

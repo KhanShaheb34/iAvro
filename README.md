@@ -31,3 +31,4 @@ Migration + release docs:
 CI:
 
 - `.github/workflows/ci.yml`
+- `.github/workflows/release.yml` (publishes release artifacts on `v*` tags)
