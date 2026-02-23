@@ -11,6 +11,17 @@
 
 @implementation NSString (Levenshtein)
 
+static NSRegularExpression* compileRegex(NSString *pattern) {
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern
+                                                                            options:0
+                                                                              error:&error];
+    if (error) {
+        return nil;
+    }
+    return regex;
+}
+
 /// minimum between three values
 int minimum(int a,int b,int c)
 {
@@ -56,6 +67,39 @@ int minimum(int a,int b,int c)
 	}
 	
 	return -1; // error
+}
+
+- (BOOL)isMatchedByRegex:(NSString *)pattern {
+    NSRegularExpression *regex = compileRegex(pattern);
+    if (!regex) {
+        return NO;
+    }
+    NSRange range = NSMakeRange(0, [self length]);
+    NSTextCheckingResult *match = [regex firstMatchInString:self options:0 range:range];
+    return match != nil;
+}
+
+- (NSArray *)captureComponentsMatchedByRegex:(NSString *)pattern {
+    NSRegularExpression *regex = compileRegex(pattern);
+    if (!regex) {
+        return nil;
+    }
+    NSRange range = NSMakeRange(0, [self length]);
+    NSTextCheckingResult *match = [regex firstMatchInString:self options:0 range:range];
+    if (!match) {
+        return nil;
+    }
+
+    NSMutableArray *components = [NSMutableArray arrayWithCapacity:[match numberOfRanges]];
+    for (NSUInteger i = 0; i < [match numberOfRanges]; ++i) {
+        NSRange groupRange = [match rangeAtIndex:i];
+        if (groupRange.location == NSNotFound) {
+            [components addObject:@""];
+        } else {
+            [components addObject:[self substringWithRange:groupRange]];
+        }
+    }
+    return components;
 }
 
 

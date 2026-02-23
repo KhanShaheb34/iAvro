@@ -10,7 +10,7 @@
 #import "Suggestion.h"
 #import "Candidates.h"
 #import "CacheManager.h"
-#import "RegexKitLite.h"
+#import "NSString+Levenshtein.h"
 #import "AvroParser.h"
 #import "AutoCorrect.h"
 

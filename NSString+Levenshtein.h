@@ -12,5 +12,7 @@
 @interface NSString (Levenshtein)
 
 -(int) computeLevenshteinDistanceWithString:(NSString *) string;
+- (BOOL)isMatchedByRegex:(NSString *)pattern;
+- (NSArray *)captureComponentsMatchedByRegex:(NSString *)pattern;
 
 @end

@@ -16,7 +16,7 @@
 
 //Each input method needs a unique connection name. 
 //Note that periods and spaces are not allowed in the connection name.
-const NSString* kConnectionName = @"Avro_Keyboard_Connection";
+const NSString* kConnectionName = @"Avro_Silicon_Connection";
 
 //let this be a global so our application controller delegate can access it easily
 IMKServer* server;

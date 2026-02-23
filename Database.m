@@ -6,9 +6,9 @@
 //
 
 #import "Database.h"
-#import "FMDatabase.h"
 #import "RegexParser.h"
-#import "RegexKitLite.h"
+#import "NSString+Levenshtein.h"
+#import <sqlite3.h>
 
 static Database* sharedInstance = nil;
 
@@ -58,8 +58,16 @@ static Database* sharedInstance = nil;
         NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
         
         NSString* filePath = [[NSBundle mainBundle] pathForResource:@"database" ofType:@"db3"];
-        FMDatabase *sqliteDb = [FMDatabase databaseWithPath:filePath];
-        [sqliteDb open];
+        sqlite3 *sqliteDb = NULL;
+        int rc = sqlite3_open_v2([filePath fileSystemRepresentation], &sqliteDb, SQLITE_OPEN_READONLY, NULL);
+        if (rc != SQLITE_OK || !sqliteDb) {
+            if (sqliteDb) {
+                sqlite3_close(sqliteDb);
+            }
+            @throw [NSException exceptionWithName:@"Database init"
+                                           reason:@"Unable to open database.db3"
+                                         userInfo:nil];
+        }
         
         [self loadTableWithName:@"A" fromDatabase:sqliteDb];
         [self loadTableWithName:@"AA" fromDatabase:sqliteDb];
@@ -111,7 +119,7 @@ static Database* sharedInstance = nil;
         
         [self loadSuffixTableFromDatabase:sqliteDb];
         
-        [sqliteDb close];
+        sqlite3_close(sqliteDb);
         
         [loopPool release];
     }
@@ -124,13 +132,21 @@ static Database* sharedInstance = nil;
     [super dealloc];
 }
 
-- (void)loadTableWithName:(NSString*)name fromDatabase:(FMDatabase*)sqliteDb {
+- (void)loadTableWithName:(NSString*)name fromDatabase:(sqlite3*)sqliteDb {
     NSMutableArray* items = [[NSMutableArray alloc] init];
-    
-    FMResultSet *results = [sqliteDb executeQuery:[NSString stringWithFormat:@"SELECT * FROM %@", name]];
-    while([results next]) {
-        [items addObject:[results stringForColumn:@"Words"]];
+
+    NSString *query = [NSString stringWithFormat:@"SELECT Words FROM \"%@\"", name];
+    sqlite3_stmt *statement = NULL;
+    int prepare = sqlite3_prepare_v2(sqliteDb, [query UTF8String], -1, &statement, NULL);
+    if (prepare == SQLITE_OK) {
+        while (sqlite3_step(statement) == SQLITE_ROW) {
+            const unsigned char *word = sqlite3_column_text(statement, 0);
+            if (word) {
+                [items addObject:[NSString stringWithUTF8String:(const char *)word]];
+            }
+        }
     }
+    sqlite3_finalize(statement);
     
     /*
      NSLog(@"-----------------------------------------------------------------");
@@ -139,17 +155,25 @@ static Database* sharedInstance = nil;
      */
     
     [_db setObject:items forKey:[name lowercaseString]];
-    
-    [results close];
     [items release];
 }
 
-- (void)loadSuffixTableFromDatabase:(FMDatabase*)sqliteDb {
-    FMResultSet *results = [sqliteDb executeQuery:[NSString stringWithFormat:@"SELECT * FROM Suffix"]];
-    while([results next]) {
-        [_suffix setObject:[results stringForColumn:@"Bangla"] forKey:[results stringForColumn:@"English"]];
+- (void)loadSuffixTableFromDatabase:(sqlite3*)sqliteDb {
+    const char *query = "SELECT English, Bangla FROM Suffix";
+    sqlite3_stmt *statement = NULL;
+    int prepare = sqlite3_prepare_v2(sqliteDb, query, -1, &statement, NULL);
+    if (prepare == SQLITE_OK) {
+        while (sqlite3_step(statement) == SQLITE_ROW) {
+            const unsigned char *english = sqlite3_column_text(statement, 0);
+            const unsigned char *bangla = sqlite3_column_text(statement, 1);
+            if (english && bangla) {
+                NSString *englishString = [NSString stringWithUTF8String:(const char *)english];
+                NSString *banglaString = [NSString stringWithUTF8String:(const char *)bangla];
+                [_suffix setObject:banglaString forKey:englishString];
+            }
+        }
     }
-    [results close];
+    sqlite3_finalize(statement);
 }
 
 - (NSArray*)find:(NSString*)term {
