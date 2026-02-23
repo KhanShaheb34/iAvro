@@ -21,6 +21,17 @@ static double DatabasePerfNowMs(void) {
 #define DATABASE_PERF_LOG(fmt, ...) NSLog((@"[AvroPerf] " fmt), ##__VA_ARGS__)
 #endif
 
+static BOOL DatabaseRegexBodyIsLiteral(NSString *pattern) {
+    if (!pattern || [pattern length] == 0) {
+        return NO;
+    }
+    static NSCharacterSet *metaCharacters = nil;
+    if (!metaCharacters) {
+        metaCharacters = [[NSCharacterSet characterSetWithCharactersInString:@"\\.^$*+?()[]{}|"] retain];
+    }
+    return [pattern rangeOfCharacterFromSet:metaCharacters].location == NSNotFound;
+}
+
 static Database* sharedInstance = nil;
 
 @implementation Database
@@ -64,6 +75,9 @@ static Database* sharedInstance = nil;
     self = [super init];    
     if (self) {
         _db = [[NSMutableDictionary alloc] initWithCapacity:0];
+        _dbLookup = [[NSMutableDictionary alloc] initWithCapacity:0];
+        _findCache = [[NSCache alloc] init];
+        [_findCache setCountLimit:1024];
         _suffix = [[NSMutableDictionary alloc] initWithCapacity:0];
         
         NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
@@ -139,6 +153,8 @@ static Database* sharedInstance = nil;
 
 - (void)dealloc {
     [_db release];
+    [_dbLookup release];
+    [_findCache release];
     [_suffix release];
     [super dealloc];
 }
@@ -166,6 +182,7 @@ static Database* sharedInstance = nil;
      */
     
     [_db setObject:items forKey:[name lowercaseString]];
+    [_dbLookup setObject:[NSSet setWithArray:items] forKey:[name lowercaseString]];
     [items release];
 }
 
@@ -195,23 +212,52 @@ static Database* sharedInstance = nil;
     NSUInteger perfTableCount = 0;
     NSUInteger perfScannedCount = 0;
     NSUInteger perfMatchedCount = 0;
+    BOOL perfCacheHit = NO;
+    BOOL perfLiteralPath = NO;
 #endif
+    if (!term || [term length] == 0) {
+        return [NSArray array];
+    }
+    
+    NSArray *cachedResult = [_findCache objectForKey:term];
+    if (cachedResult) {
+#ifdef DEBUG
+        perfCacheHit = YES;
+        if (DatabasePerfLoggingEnabled()) {
+            double totalMs = DatabasePerfNowMs() - perfStartMs;
+            DATABASE_PERF_LOG(@"database.find total=%.2fms cache=hit term='%@' result=%lu",
+                              totalMs,
+                              term,
+                              (unsigned long)[cachedResult count]);
+        }
+#endif
+        return cachedResult;
+    }
+    
     // Left Most Character
     unichar lmc = [[term lowercaseString] characterAtIndex:0];
 #ifdef DEBUG
     double regexStartMs = DatabasePerfNowMs();
 #endif
-    NSString* regex = [NSString stringWithFormat:@"^%@$", [[RegexParser sharedInstance] parse:term]];
-    NSError *regexError = nil;
-    NSRegularExpression *compiledRegex = [NSRegularExpression regularExpressionWithPattern:regex
-                                                                                    options:0
-                                                                                      error:&regexError];
+    NSString *regexBody = [[RegexParser sharedInstance] parse:term];
+    BOOL useLiteralPath = DatabaseRegexBodyIsLiteral(regexBody);
+#ifdef DEBUG
+    perfLiteralPath = useLiteralPath;
+#endif
+    NSRegularExpression *compiledRegex = nil;
+    if (!useLiteralPath) {
+        NSString* regex = [NSString stringWithFormat:@"^%@$", regexBody];
+        NSError *regexError = nil;
+        compiledRegex = [NSRegularExpression regularExpressionWithPattern:regex
+                                                                  options:0
+                                                                    error:&regexError];
+        if (regexError || !compiledRegex) {
+            return [NSArray array];
+        }
+    }
 #ifdef DEBUG
     perfRegexMs = DatabasePerfNowMs() - regexStartMs;
 #endif
-    if (regexError || !compiledRegex) {
-        return [NSArray array];
-    }
     NSMutableArray* tableList = [[NSMutableArray alloc] initWithCapacity:0];
     NSMutableSet* suggestions = [[NSMutableSet alloc] initWithCapacity:0];
     
@@ -329,23 +375,39 @@ static Database* sharedInstance = nil;
 #endif
     
     for (NSString* table in tableList) {
-        NSArray* tableData = [_db objectForKey:table];
-        for (NSString* tmpString in tableData) {
+        if (useLiteralPath) {
+            NSSet *lookup = [_dbLookup objectForKey:table];
 #ifdef DEBUG
-            ++perfScannedCount;
+            perfScannedCount += [lookup count];
 #endif
-            NSRange searchRange = NSMakeRange(0, [tmpString length]);
-            if ([compiledRegex firstMatchInString:tmpString options:0 range:searchRange]) {
-                [suggestions addObject:tmpString];
+            if ([lookup containsObject:regexBody]) {
+                [suggestions addObject:regexBody];
 #ifdef DEBUG
                 ++perfMatchedCount;
 #endif
+            }
+        } else {
+            NSArray* tableData = [_db objectForKey:table];
+            for (NSString* tmpString in tableData) {
+#ifdef DEBUG
+                ++perfScannedCount;
+#endif
+                NSRange searchRange = NSMakeRange(0, [tmpString length]);
+                if ([compiledRegex firstMatchInString:tmpString options:0 range:searchRange]) {
+                    [suggestions addObject:tmpString];
+#ifdef DEBUG
+                    ++perfMatchedCount;
+#endif
+                }
             }
         }
     }
 #ifdef DEBUG
     perfScanMs = DatabasePerfNowMs() - scanStartMs;
 #endif
+    
+    NSArray *result = [suggestions allObjects];
+    [_findCache setObject:result forKey:term];
     
     [tableList release];
     [suggestions autorelease];
@@ -354,10 +416,12 @@ static Database* sharedInstance = nil;
     if (DatabasePerfLoggingEnabled()) {
         double totalMs = DatabasePerfNowMs() - perfStartMs;
         if (totalMs >= 1.0) {
-            DATABASE_PERF_LOG(@"database.find total=%.2fms regex=%.2fms scan=%.2fms term='%@' tables=%lu scanned=%lu matched=%lu",
+            DATABASE_PERF_LOG(@"database.find total=%.2fms regex=%.2fms scan=%.2fms cache=%@ literal=%@ term='%@' tables=%lu scanned=%lu matched=%lu",
                               totalMs,
                               perfRegexMs,
                               perfScanMs,
+                              perfCacheHit ? @"hit" : @"miss",
+                              perfLiteralPath ? @"yes" : @"no",
                               term,
                               (unsigned long)perfTableCount,
                               (unsigned long)perfScannedCount,
@@ -366,7 +430,7 @@ static Database* sharedInstance = nil;
     }
 #endif
     
-    return [suggestions allObjects];
+    return result;
 }
 
 - (NSString*)banglaForSuffix:(NSString*)suffix {

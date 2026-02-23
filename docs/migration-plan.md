@@ -112,6 +112,10 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
 - Completed:
   - Added regex compilation caching in `NSString+Levenshtein` to avoid recompiling identical patterns across hot paths.
   - Optimized dictionary suggestion sorting by precomputing Levenshtein distances once per candidate before sorting.
+  - Optimized `Database.find` hot path with:
+    - in-memory result caching (`NSCache`) by typed term
+    - prebuilt per-table lookup sets for literal matches
+    - literal fast path that skips regex compilation/scanning when safe
   - Added debug-only runtime timing instrumentation across:
     - `AvroKeyboardController` (`inputText`, candidate generation, panel update)
     - `Suggestion` (parse/cache/dictionary/suffix stages)
@@ -119,5 +123,5 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
   - Added runtime toggle key for perf logs: `EnablePerfLog` in user defaults.
   - Verified project still builds successfully with `xcodebuild` using scheme `Avro Silicon`.
 - Next:
-  - Capture baseline latency under burst typing and target highest-cost stages.
+  - Re-capture latency under burst typing and compare against current baseline.
   - Add focused tests/fixtures for parser/suggestion/database regressions.

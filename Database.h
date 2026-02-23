@@ -9,6 +9,8 @@
 
 @interface Database : NSObject {
     NSMutableDictionary* _db;
+    NSMutableDictionary* _dbLookup;
+    NSCache* _findCache;
     NSMutableDictionary* _suffix;
 }
 
