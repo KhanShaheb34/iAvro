@@ -398,12 +398,16 @@
 					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 					CODE_SIGN_STYLE = Automatic;
 					COMBINE_HIDPI_IMAGES = YES;
-					COPY_PHASE_STRIP = NO;
-					GCC_DYNAMIC_NO_PIC = NO;
-					GCC_OPTIMIZATION_LEVEL = 0;
-					INFOPLIST_FILE = Info.plist;
-					INSTALL_PATH = "\"$(LOCAL_LIBRARY_DIR)/Input Methods/\"";
-					MACOSX_DEPLOYMENT_TARGET = 11.0;
+						COPY_PHASE_STRIP = NO;
+						GCC_DYNAMIC_NO_PIC = NO;
+						GCC_OPTIMIZATION_LEVEL = 0;
+						GCC_PREPROCESSOR_DEFINITIONS = (
+							"DEBUG=1",
+							"$(inherited)",
+						);
+						INFOPLIST_FILE = Info.plist;
+						INSTALL_PATH = "\"$(LOCAL_LIBRARY_DIR)/Input Methods/\"";
+						MACOSX_DEPLOYMENT_TARGET = 11.0;
 					PRODUCT_BUNDLE_IDENTIFIER = com.omicronlab.inputmethod.AvroSilicon;
 					PRODUCT_NAME = "Avro Silicon";
 					PROVISIONING_PROFILE_SPECIFIER = "";
