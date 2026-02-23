@@ -121,7 +121,13 @@ This document defines a practical 3-phase migration path to keep iAvro usable on
     - `Suggestion` (parse/cache/dictionary/suffix stages)
     - `Database` (`find` regex compile + scan stages)
   - Added runtime toggle key for perf logs: `EnablePerfLog` in user defaults.
+  - Added resource loading fallbacks (`IAVRO_RESOURCE_DIR`, class bundle, current directory) for deterministic tooling/tests outside app bundle context.
+  - Added fixture-driven regression test runner for parser/database/suggestion:
+    - fixtures: `tests/fixtures/regression_cases.json`
+    - runner: `tests/regression_runner.m`
+    - command: `scripts/run_regression_tests.sh`
+  - Added compatibility and release checklist: `docs/release-checklist.md`.
   - Verified project still builds successfully with `xcodebuild` using scheme `Avro Silicon`.
 - Next:
   - Re-capture latency under burst typing and compare against current baseline.
-  - Add focused tests/fixtures for parser/suggestion/database regressions.
+  - Execute full manual candidate-panel edge-case checklist across multiple host apps.

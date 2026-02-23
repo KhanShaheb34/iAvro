@@ -6,6 +6,37 @@
 //
 
 #import "RegexParser.h"
+#include <stdlib.h>
+
+static NSString *RegexParserResourcePath(NSString *name, NSString *ext) {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *fileName = [NSString stringWithFormat:@"%@.%@", name, ext];
+
+    const char *resourceDir = getenv("IAVRO_RESOURCE_DIR");
+    if (resourceDir) {
+        NSString *path = [[NSString stringWithUTF8String:resourceDir] stringByAppendingPathComponent:fileName];
+        if ([fileManager fileExistsAtPath:path]) {
+            return path;
+        }
+    }
+
+    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
+    if (path && [fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    path = [[NSBundle bundleForClass:[RegexParser class]] pathForResource:name ofType:ext];
+    if (path && [fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];
+    if ([fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    return nil;
+}
 
 static RegexParser* sharedInstance = nil;
 
@@ -51,7 +82,7 @@ static RegexParser* sharedInstance = nil;
     self = [super init];
     if (self) {
         NSError *error = nil;
-        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"regex" ofType:@"json"];
+        NSString *filePath = RegexParserResourcePath(@"regex", @"json");
         NSData *jsonData = [NSData dataWithContentsOfFile:filePath options:NSDataReadingUncached error: &error];
         
         if (jsonData) {

@@ -7,6 +7,37 @@
 
 #import "AutoCorrect.h"
 #import "AvroParser.h"
+#include <stdlib.h>
+
+static NSString *AutoCorrectResourcePath(NSString *name, NSString *ext) {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *fileName = [NSString stringWithFormat:@"%@.%@", name, ext];
+
+    const char *resourceDir = getenv("IAVRO_RESOURCE_DIR");
+    if (resourceDir) {
+        NSString *path = [[NSString stringWithUTF8String:resourceDir] stringByAppendingPathComponent:fileName];
+        if ([fileManager fileExistsAtPath:path]) {
+            return path;
+        }
+    }
+
+    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
+    if (path && [fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    path = [[NSBundle bundleForClass:[AutoCorrect class]] pathForResource:name ofType:ext];
+    if (path && [fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];
+    if ([fileManager fileExistsAtPath:path]) {
+        return path;
+    }
+
+    return nil;
+}
 
 static AutoCorrect* sharedInstance = nil;
 
@@ -53,7 +84,7 @@ static AutoCorrect* sharedInstance = nil;
     self = [super init];
     if (self) {
         // Open the file
-        NSString *fileName = [[NSBundle mainBundle] pathForResource:@"autodict" ofType:@"plist"];
+        NSString *fileName = AutoCorrectResourcePath(@"autodict", @"plist");
         // Check if the file exist and load from it, otherwise start with a empty dictionary
         if ([[NSFileManager defaultManager] fileExistsAtPath:fileName]) {
             _autoCorrectEntries = [[NSMutableDictionary alloc] initWithContentsOfFile:fileName];

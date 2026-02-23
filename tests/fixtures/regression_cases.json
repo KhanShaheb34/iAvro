@@ -1,0 +1,21 @@
+{
+  "parser": [
+    { "input": "ami", "expected": "আমি" },
+    { "input": "bangla", "expected": "বাংলা" },
+    { "input": "shobdo", "expected": "শব্দ" },
+    { "input": "kintu", "expected": "কিন্তু" }
+  ],
+  "database_contains": [
+    { "input": "ami", "contains": "আমি" },
+    { "input": "bangla", "contains": "বাংলা" },
+    { "input": "kintu", "contains": "কিন্তু" }
+  ],
+  "database_empty": [
+    "zzzzq"
+  ],
+  "suggestion_contains": [
+    { "input": "ami", "contains": "আমি" },
+    { "input": "bangla", "contains": "বাংলা" },
+    { "input": "kintu", "contains": "কিন্তু" }
+  ]
+}
