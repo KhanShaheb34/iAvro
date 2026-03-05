@@ -105,7 +105,7 @@ static Suggestion* sharedInstance = nil;
 #ifdef DEBUG
         double cacheStartMs = SuggestionPerfNowMs();
 #endif
-        [_suggestions addObjectsFromArray:[[CacheManager sharedInstance] arrayForKey:term]];
+        [_suggestions addObjectsFromArray:[[CacheManager sharedInstance] suggestionsForInput:term]];
 #ifdef DEBUG
         perfCacheMs = SuggestionPerfNowMs() - cacheStartMs;
 #endif
@@ -149,7 +149,7 @@ static Suggestion* sharedInstance = nil;
                 [_suggestions addObjectsFromArray:sortedDicList];
             }
             
-            [[CacheManager sharedInstance] setArray:[[_suggestions copy] autorelease] forKey:term];
+            [[CacheManager sharedInstance] setSuggestions:[[_suggestions copy] autorelease] forInput:term];
 #ifdef DEBUG
             perfDictionaryMs = SuggestionPerfNowMs() - dictionaryStartMs;
 #endif
@@ -158,7 +158,7 @@ static Suggestion* sharedInstance = nil;
         // Suggestions with Suffix
         NSInteger i;
         BOOL alreadySelected = FALSE;
-        [[CacheManager sharedInstance] removeAllBase];
+        [[CacheManager sharedInstance] removeAllSuffixBases];
 #ifdef DEBUG
         double suffixStartMs = SuggestionPerfNowMs();
 #endif
@@ -166,11 +166,11 @@ static Suggestion* sharedInstance = nil;
             NSString* suffix = [[Database sharedInstance] banglaForSuffix:[[term substringFromIndex:i] lowercaseString]];
             if (suffix) {
                 NSString* base = [term substringToIndex:i];
-                NSArray* cached = [[CacheManager sharedInstance] arrayForKey:base];
+                NSArray* cached = [[CacheManager sharedInstance] suggestionsForInput:base];
                 NSString* selected;
                 if (!alreadySelected) {
                     // Base user selection
-                    selected = [[CacheManager sharedInstance] stringForKey:base];
+                    selected = [[CacheManager sharedInstance] weightForInput:base];
                 }
                 // This should always exist, so it's just a safety check
                 if (cached) {
@@ -202,14 +202,14 @@ static Suggestion* sharedInstance = nil;
                         // END
                         
                         // Reverse Suffix Caching 
-                        [[CacheManager sharedInstance] setBase:[NSArray arrayWithObjects:base, item, nil] forKey:word];
+                        [[CacheManager sharedInstance] setSuffixBase:[NSArray arrayWithObjects:base, item, nil] forCandidate:word];
                         
                         // Check that the WORD is not already in the list
                         if (![_suggestions containsObject:word]) {
                             // Intelligent Selection
                             if (!alreadySelected && selected && [item isEqualToString:selected]) {
-                                if (![[CacheManager sharedInstance] stringForKey:term]) {
-                                    [[CacheManager sharedInstance] setString:word forKey:term];
+                                if (![[CacheManager sharedInstance] weightForInput:term]) {
+                                    [[CacheManager sharedInstance] setWeight:word forInput:term];
                                 }
                                 alreadySelected = TRUE;
                             }

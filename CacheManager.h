@@ -17,20 +17,18 @@
 
 - (void)persist;
 
-// TODO - Rewrite the CacheManager with meaningful methods
+// Weight Cache — remembers user's preferred candidate for a given input
+- (NSString*)weightForInput:(NSString*)input;
+- (void)removeWeightForInput:(NSString*)input;
+- (void)setWeight:(NSString*)candidate forInput:(NSString*)input;
 
-// Weight Cache (default for String)
-- (NSString*)stringForKey:(NSString*)aKey;
-- (void)removeStringForKey:(NSString*)aKey;
-- (void)setString:(NSString*)aString forKey:(NSString*)aKey;
+// Phonetic Cache — caches suggestion lists for previously seen inputs
+- (NSArray*)suggestionsForInput:(NSString*)input;
+- (void)setSuggestions:(NSArray*)suggestions forInput:(NSString*)input;
 
-// Phonetic Cache (default for Array)
-- (NSArray*)arrayForKey:(NSString*)aKey;
-- (void)setArray:(NSArray*)anArray forKey:(NSString*)aKey;
-
-// Base Cache
-- (void)removeAllBase;
-- (NSArray*)baseForKey:(NSString*)aKey;
-- (void)setBase:(NSArray*)aBase forKey:(NSString*)aKey;
+// Suffix Base Cache — maps suffixed candidates back to their base form
+- (void)removeAllSuffixBases;
+- (NSArray*)suffixBaseForCandidate:(NSString*)candidate;
+- (void)setSuffixBase:(NSArray*)base forCandidate:(NSString*)candidate;
 
 @end

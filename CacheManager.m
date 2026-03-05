@@ -94,38 +94,38 @@ static CacheManager* sharedInstance = nil;
 }
 
 // Weight Cache
-- (NSString*)stringForKey:(NSString*)aKey {
-    return [_weightCache objectForKey:aKey];
+- (NSString*)weightForInput:(NSString*)input {
+    return [_weightCache objectForKey:input];
 }
 
-- (void)removeStringForKey:(NSString*)aKey {
-    [_weightCache removeObjectForKey:aKey];
+- (void)removeWeightForInput:(NSString*)input {
+    [_weightCache removeObjectForKey:input];
 }
 
-- (void)setString:(NSString*)aString forKey:(NSString*)aKey {
-    [_weightCache setObject:aString forKey:aKey];
+- (void)setWeight:(NSString*)candidate forInput:(NSString*)input {
+    [_weightCache setObject:candidate forKey:input];
 }
 
 // Phonetic Cache
-- (NSArray*)arrayForKey:(NSString*)aKey {
-    return [_phoneticCache objectForKey:aKey];
+- (NSArray*)suggestionsForInput:(NSString*)input {
+    return [_phoneticCache objectForKey:input];
 }
 
-- (void)setArray:(NSArray*)anArray forKey:(NSString*)aKey {
-    [_phoneticCache setObject:anArray forKey:aKey];
+- (void)setSuggestions:(NSArray*)suggestions forInput:(NSString*)input {
+    [_phoneticCache setObject:suggestions forKey:input];
 }
 
-// Base Cache
-- (void)removeAllBase {
+// Suffix Base Cache
+- (void)removeAllSuffixBases {
     [_recentBaseCache removeAllObjects];
 }
 
-- (NSArray*)baseForKey:(NSString*)aKey {
-    return [_recentBaseCache objectForKey:aKey];
+- (NSArray*)suffixBaseForCandidate:(NSString*)candidate {
+    return [_recentBaseCache objectForKey:candidate];
 }
 
-- (void)setBase:(NSArray*)aBase forKey:(NSString*)aKey {
-    [_recentBaseCache setObject:aBase forKey:aKey];
+- (void)setSuffixBase:(NSArray*)base forCandidate:(NSString*)candidate {
+    [_recentBaseCache setObject:base forKey:candidate];
 }
 
 @end

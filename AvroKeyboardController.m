@@ -83,7 +83,7 @@ static double AvroPerfNowMs(void) {
                 NSString* prevString = nil;
                 if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
                     _prevSelected = -1;
-                    prevString = [[CacheManager sharedInstance] stringForKey:[self term]];
+                    prevString = [[CacheManager sharedInstance] weightForInput:[self term]];
                 }
                 int i;
                 for (i = 0; i < [_currentCandidates count]; ++i) {
@@ -176,12 +176,12 @@ static double AvroPerfNowMs(void) {
             if ((comp && _prevSelected == -1) == NO) {
                 NSRange range = NSMakeRange([[self prefix] length], 
                                             [candidateString length] - ([[self prefix] length] + [[self suffix] length]));
-                [[CacheManager sharedInstance] setString:[[candidateString string] substringWithRange:range] forKey:[self term]];
-                
+                [[CacheManager sharedInstance] setWeight:[[candidateString string] substringWithRange:range] forInput:[self term]];
+
                 // Reverse Suffix Caching
-                NSArray* tmpArray = [[CacheManager sharedInstance] baseForKey:[candidateString string]];
+                NSArray* tmpArray = [[CacheManager sharedInstance] suffixBaseForCandidate:[candidateString string]];
                 if (tmpArray && [tmpArray count] > 0) {
-                    [[CacheManager sharedInstance] setString:[tmpArray objectAtIndex:1] forKey:[tmpArray objectAtIndex:0]];
+                    [[CacheManager sharedInstance] setWeight:[tmpArray objectAtIndex:1] forInput:[tmpArray objectAtIndex:0]];
                 }
             }
         }
