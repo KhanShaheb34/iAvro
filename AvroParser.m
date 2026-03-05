@@ -246,7 +246,7 @@ static AvroParser* sharedInstance = nil;
 
     [output autorelease];
 
-    return output;
+    return [output precomposedStringWithCanonicalMapping];
 }
 
 - (BOOL)inString:(NSString*) str c:(unichar) c {
