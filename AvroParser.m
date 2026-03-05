@@ -6,37 +6,7 @@
 //
 
 #import "AvroParser.h"
-#include <stdlib.h>
-
-static NSString *AvroParserResourcePath(NSString *name, NSString *ext) {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *fileName = [NSString stringWithFormat:@"%@.%@", name, ext];
-
-    const char *resourceDir = getenv("IAVRO_RESOURCE_DIR");
-    if (resourceDir) {
-        NSString *path = [[NSString stringWithUTF8String:resourceDir] stringByAppendingPathComponent:fileName];
-        if ([fileManager fileExistsAtPath:path]) {
-            return path;
-        }
-    }
-
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[NSBundle bundleForClass:[AvroParser class]] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];
-    if ([fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    return nil;
-}
+#import "AvroResourcePath.h"
 
 static AvroParser* sharedInstance = nil;
 
@@ -81,7 +51,7 @@ static AvroParser* sharedInstance = nil;
     self = [super init];
     if (self) {
         NSError *error = nil;
-        NSString *filePath = AvroParserResourcePath(@"data", @"json");
+        NSString *filePath = AvroResourcePathForFile(@"data", @"json", [AvroParser class]);
         NSData *jsonData = [NSData dataWithContentsOfFile:filePath options:NSDataReadingUncached error: &error];
 
         if (jsonData) {

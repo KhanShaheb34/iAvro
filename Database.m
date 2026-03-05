@@ -8,8 +8,8 @@
 #import "Database.h"
 #import "RegexParser.h"
 #import <sqlite3.h>
-#include <stdlib.h>
 #import "AvroPreferenceKeys.h"
+#import "AvroResourcePath.h"
 
 #ifdef DEBUG
 static BOOL DatabasePerfLoggingEnabled(void) {
@@ -22,36 +22,6 @@ static double DatabasePerfNowMs(void) {
 
 #define DATABASE_PERF_LOG(fmt, ...) NSLog((@"[AvroPerf] " fmt), ##__VA_ARGS__)
 #endif
-
-static NSString *DatabaseResourcePath(NSString *name, NSString *ext) {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *fileName = [NSString stringWithFormat:@"%@.%@", name, ext];
-
-    const char *resourceDir = getenv("IAVRO_RESOURCE_DIR");
-    if (resourceDir) {
-        NSString *path = [[NSString stringWithUTF8String:resourceDir] stringByAppendingPathComponent:fileName];
-        if ([fileManager fileExistsAtPath:path]) {
-            return path;
-        }
-    }
-
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[NSBundle bundleForClass:[Database class]] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];
-    if ([fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    return nil;
-}
 
 static BOOL DatabaseRegexBodyIsLiteral(NSString *pattern) {
     if (!pattern || [pattern length] == 0) {
@@ -114,7 +84,7 @@ static Database* sharedInstance = nil;
         
         NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
         
-        NSString* filePath = DatabaseResourcePath(@"database", @"db3");
+        NSString* filePath = AvroResourcePathForFile(@"database", @"db3", [Database class]);
         sqlite3 *sqliteDb = NULL;
         int rc = sqlite3_open_v2([filePath fileSystemRepresentation], &sqliteDb, SQLITE_OPEN_READONLY, NULL);
         if (rc != SQLITE_OK || !sqliteDb) {
