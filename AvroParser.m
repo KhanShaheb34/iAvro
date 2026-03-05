@@ -232,7 +232,7 @@ static AvroParser* sharedInstance = nil;
                                         s = start - [value length];
                                         e = start;
                                     }
-                                    if(![self isExact:value heystack:fixed start:(int)s end:(int)e not:isNegative]) {
+                                    if(![self isExact:value haystack:fixed start:(int)s end:(int)e not:isNegative]) {
                                         replace = FALSE;
                                         break;
                                     }
@@ -313,11 +313,10 @@ static AvroParser* sharedInstance = nil;
     return [self inString:_casesensitive c:c];
 }
 
-- (BOOL)isExact:(NSString*) needle heystack:(NSString*)heystack start:(int)start end:(int)end not:(BOOL)not {
-    // NSLog(@"Cut: %@", [heystack substringWithRange:NSMakeRange(start, end)]);
+- (BOOL)isExact:(NSString*) needle haystack:(NSString*)haystack start:(int)start end:(int)end not:(BOOL)not {
     int len = end - start;
-    return ((start >= 0 && end < [heystack length]
-             && [[heystack substringWithRange:NSMakeRange(start, len)] isEqualToString:needle]) ^ not);
+    return ((start >= 0 && end < [haystack length]
+             && [[haystack substringWithRange:NSMakeRange(start, len)] isEqualToString:needle]) ^ not);
 }
 
 - (unichar)smallCap:(unichar) letter {

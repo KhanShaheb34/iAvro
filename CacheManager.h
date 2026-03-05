@@ -24,11 +24,11 @@
 - (void)removeStringForKey:(NSString*)aKey;
 - (void)setString:(NSString*)aString forKey:(NSString*)aKey;
 
-// Phonetic Cahce (default for Array)
+// Phonetic Cache (default for Array)
 - (NSArray*)arrayForKey:(NSString*)aKey;
 - (void)setArray:(NSArray*)anArray forKey:(NSString*)aKey;
 
-// Base Cahce
+// Base Cache
 - (void)removeAllBase;
 - (NSArray*)baseForKey:(NSString*)aKey;
 - (void)setBase:(NSArray*)aBase forKey:(NSString*)aKey;

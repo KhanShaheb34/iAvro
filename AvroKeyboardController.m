@@ -137,7 +137,7 @@ static double AvroPerfNowMs(void) {
         [[Candidates sharedInstance] show:kIMKLocateCandidatesBelowHint];
         if (_prevSelected > -1) {
             // IMKCandidates:selectCandidate not working here in sierra
-            // Temporary workaounrd
+            // Temporary workaround
             for (int i = 0 ; i < _prevSelected; ++i) {
                 if ([[Candidates sharedInstance] panelType] == kIMKSingleColumnScrollingCandidatePanel) {
                     [[Candidates sharedInstance] moveDown:self];
