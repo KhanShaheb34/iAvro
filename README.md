@@ -40,6 +40,7 @@ xcodebuild \
   -configuration Release \
   -sdk macosx \
   CODE_SIGNING_ALLOWED=NO \
+  SYMROOT="$(pwd)/build" \
   build
 
 # Install
@@ -134,11 +135,16 @@ Contributions are welcome! Here's how to get started:
 - Ensure `EnablePerfLog` is set to `true`
 - Generate typing activity, then run `scripts/perf_report.sh 5m`
 
+## Why a fork and not a PR?
+
+This fork was improved with the help of [Claude Code](https://claude.com/claude-code). I'm not a macOS developer — I just needed this keyboard to keep working on Apple Silicon. Since the codebase changes were largely AI-assisted, I wasn't confident enough in the internals to open a PR on the original repository. I didn't want to waste the original developer's time reviewing AI-generated code they'd have to maintain. If you're a macOS developer and these changes look solid to you, feel free to upstream them.
+
 ## License
 
-This project is based on [iAvro](https://github.com/nicefiction/iAvro) by OmicronLab.
+This project is based on [iAvro](https://github.com/torifat/iAvro) by OmicronLab.
 
 ## Credits
 
-- Original iAvro by [Rifat Nabi](https://github.com/nicefiction) / OmicronLab
+- Original iAvro by [Rifat Nabi](https://github.com/torifat) / OmicronLab
 - Apple Silicon modernization and improvements by the open-source community
+- Code improvements assisted by [Claude Code](https://claude.com/claude-code)
