@@ -86,6 +86,7 @@ static Suggestion* sharedInstance = nil;
     double perfDictionaryMs = 0.0;
     double perfSuffixMs = 0.0;
 #endif
+    [_suggestions removeAllObjects];
     if (term && [term length] == 0) {
         return _suggestions;
     }
