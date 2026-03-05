@@ -141,7 +141,7 @@ This fork was improved with the help of [Claude Code](https://claude.com/claude-
 
 ## License
 
-This project is based on [iAvro](https://github.com/torifat/iAvro) by OmicronLab.
+This project is licensed under the [Mozilla Public License 1.1](LICENSE), same as the original [iAvro](https://github.com/torifat/iAvro) by OmicronLab.
 
 ## Credits
 
