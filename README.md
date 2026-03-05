@@ -1,110 +1,150 @@
 # Avro Silicon
 
-Avro Silicon is a modernized macOS Bengali input method based on iAvro, updated to run reliably on Apple Silicon while preserving the original typing behavior.
+A native macOS Bengali (Bangla) phonetic input method for Apple Silicon. Type in English and get Bengali text — just like the original [Avro Keyboard](https://www.omicronlab.com/avro-keyboard.html), but modernized for current macOS.
 
-## Current Status
+## Why This Exists
 
-- Phase 1: complete (modern build/runtime compatibility)
-- Phase 2: complete (regression checks, perf instrumentation, release checklist)
-- Phase 3: in progress (CI + release automation started)
+The original iAvro was built for Intel Macs and will stop working in upcoming macOS versions. Avro Silicon is a from-source modernization that:
 
-See details in:
+- Builds and runs natively on Apple Silicon (arm64)
+- Removes all legacy dependencies (CocoaPods, RegexKitLite, FMDB)
+- Uses only system frameworks (Foundation, InputMethodKit, sqlite3)
+- Preserves the exact same phonetic typing behavior
 
-- `docs/migration-plan.md`
-- `docs/release-checklist.md`
+## Features
 
-## Installation (From Release)
+- **Phonetic Bengali input** — type `ami` to get `আমি`, `bangla` to get `বাংলা`
+- **Smart candidate suggestions** — dictionary-backed suggestions sorted by edit distance
+- **Suffix-aware completion** — intelligently handles Bengali suffixes and conjuncts
+- **AutoCorrect / emoticon support** — shorthand expansions
+- **User learning** — remembers your preferred candidates across sessions
+- **Candidate panel** — configurable single-column or single-row layout
+- **Lightweight** — no external dependencies, fast startup
 
-1. Download the latest release artifact (`.tar.gz`) from this repository’s Releases page.
-2. Extract it to get `Avro Silicon.app`.
-3. Copy the app to `~/Library/Input Methods/`.
-4. Open System Settings > Keyboard > Input Sources and add `Avro Silicon` under Bangla.
+## Installation
 
-If the new app does not appear immediately, run:
+### From Release
 
-```bash
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f ~/Library/Input\ Methods/Avro\ Silicon.app
-killall TextInputMenuAgent
-```
+1. Download the latest `.tar.gz` from the [Releases](../../releases) page.
+2. Extract to get `Avro Silicon.app`.
+3. Copy it to `~/Library/Input Methods/`.
+4. Open **System Settings > Keyboard > Input Sources** and add **Avro Silicon** under Bangla.
 
-## Build (Local)
-
-Debug build:
-
-```bash
-xcodebuild \
-  -project AvroKeyboard.xcodeproj \
-  -scheme "Avro Silicon" \
-  -configuration Debug \
-  -sdk macosx \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-```
-
-Release build:
+### From Source
 
 ```bash
+# Build
 xcodebuild \
   -project AvroKeyboard.xcodeproj \
   -scheme "Avro Silicon" \
   -configuration Release \
   -sdk macosx \
   CODE_SIGNING_ALLOWED=NO \
+  SYMROOT="$(pwd)/build" \
   build
+
+# Install
+scripts/install.sh
 ```
 
-## Development Checks
+If the input source doesn't appear, run:
 
-Run fixture-based regression tests:
+```bash
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f ~/Library/Input\ Methods/Avro\ Silicon.app
+killall TextInputMenuAgent
+```
+
+## Architecture
+
+```
+main.m                    — App entry point, IMKServer setup
+AvroKeyboardController    — InputMethodKit controller (composition, candidates, key handling)
+AvroParser                — Phonetic-to-Bengali transliteration engine (data.json rules)
+RegexParser               — Regex pattern generator for dictionary matching (regex.json rules)
+Database                  — SQLite3 dictionary lookup with caching and literal fast-path
+Suggestion                — Composite suggestion pipeline (parser + dictionary + autocorrect + suffix)
+CacheManager              — Persistent weight cache + in-session phonetic/suffix caches
+AutoCorrect               — Emoticon and shorthand expansion (autodict.plist)
+NSString+Levenshtein      — Edit distance calculation + regex helpers
+```
+
+Data files: `data.json` (transliteration rules), `regex.json` (pattern rules), `database.db3` (word dictionary), `autodict.plist` (autocorrect entries).
+
+## Development
+
+### Run tests
 
 ```bash
 scripts/run_regression_tests.sh
 ```
 
-Summarize recent performance logs:
-
-```bash
-scripts/perf_report.sh 10m
-```
-
-Enable perf logs (debug builds):
+### Performance profiling (debug builds)
 
 ```bash
 defaults write com.omicronlab.inputmethod.AvroSilicon EnablePerfLog -bool true
+# Use the IME, then:
+scripts/perf_report.sh 10m
 ```
 
-## CI and Release Automation
+### CI/CD
 
-- CI workflow: `.github/workflows/ci.yml`
-  - Runs regression tests
-  - Runs macOS build
+- **CI**: `.github/workflows/ci.yml` — runs regression tests and builds on every push/PR
+- **Release**: `.github/workflows/release.yml` — builds and publishes on `v*` tags
 
-- Release workflow: `.github/workflows/release.yml`
-  - Triggers on tags matching `v*`
-  - Builds `Release` app bundle
-  - Publishes `Avro-Silicon-<tag>.tar.gz` and `.sha256` to GitHub Releases
-
-## Creating a Release
-
-1. Ensure local checks pass.
-2. Push your commits.
-3. Create and push a version tag:
+### Creating a release
 
 ```bash
 git tag vX.Y.Z
 git push origin vX.Y.Z
 ```
 
-The release workflow will publish artifacts automatically.
+The release workflow publishes `.tar.gz` and `.sha256` to GitHub Releases automatically.
+
+## Contributing
+
+Contributions are welcome! Here's how to get started:
+
+1. Fork the repository and clone it.
+2. Build the project (see "From Source" above).
+3. Run the regression tests to make sure everything passes.
+4. Make your changes and add test cases for new behavior.
+5. Submit a pull request.
+
+### Areas where help is needed
+
+- **Code signing and notarization** — if you have an Apple Developer account, you can help sign and distribute the app
+- **Testing on different macOS versions** — especially older versions (macOS 11-13)
+- **Expanding the dictionary** — adding more Bengali words to `database.db3`
+- **UI improvements** — modernizing the preferences panel
+
+### Code conventions
+
+- Objective-C with manual retain/release (no ARC)
+- Singleton pattern for shared instances (AvroParser, Database, Suggestion, etc.)
+- Preference keys centralized in `AvroPreferenceKeys.h`
+- Resource path resolution via `AvroResourcePath.h`
+- Debug-only performance instrumentation behind `#ifdef DEBUG`
 
 ## Troubleshooting
 
-No perf data in report:
+**Input source not visible:**
+- Confirm app path is `~/Library/Input Methods/Avro Silicon.app`
+- Run the `lsregister` + `killall TextInputMenuAgent` commands above
 
-- Ensure `EnablePerfLog` is enabled.
-- Generate typing activity, then run `scripts/perf_report.sh 5m`.
+**No perf data in report:**
+- Ensure `EnablePerfLog` is set to `true`
+- Generate typing activity, then run `scripts/perf_report.sh 5m`
 
-Input source not visible:
+## Why a fork and not a PR?
 
-- Confirm app path is `~/Library/Input Methods/Avro Silicon.app`.
-- Run `lsregister` + `killall TextInputMenuAgent` commands above.
+This fork was improved with the help of [Claude Code](https://claude.com/claude-code). I'm not a macOS developer — I just needed this keyboard to keep working on Apple Silicon. Since the codebase changes were largely AI-assisted, I wasn't confident enough in the internals to open a PR on the original repository. I didn't want to waste the original developer's time reviewing AI-generated code they'd have to maintain. If you're a macOS developer and these changes look solid to you, feel free to upstream them.
+
+## License
+
+This project is licensed under the [Mozilla Public License 1.1](LICENSE), same as the original [iAvro](https://github.com/torifat/iAvro) by OmicronLab.
+
+## Credits
+
+- Original iAvro by [Rifat Nabi](https://github.com/torifat) / OmicronLab
+- Apple Silicon modernization and improvements by the open-source community
+- Code improvements assisted by [Claude Code](https://claude.com/claude-code)

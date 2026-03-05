@@ -10,6 +10,7 @@
 #import "CacheManager.h"
 #import "Database.h"
 #import "RegexParser.h"
+#import "AvroPreferenceKeys.h"
 
 @implementation MainMenuAppDelegate
 
@@ -29,7 +30,7 @@
 		[preferences setAction:@selector(showPreferences:)];
 	}
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
         NSLog(@"Loading Dictionary...");
         [Database sharedInstance];
         [RegexParser sharedInstance];
@@ -40,7 +41,7 @@
 
 // Currently doesn't work
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
         [[CacheManager sharedInstance] persist];
     }
 }

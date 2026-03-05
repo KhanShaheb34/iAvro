@@ -6,37 +6,7 @@
 //
 
 #import "AvroParser.h"
-#include <stdlib.h>
-
-static NSString *AvroParserResourcePath(NSString *name, NSString *ext) {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *fileName = [NSString stringWithFormat:@"%@.%@", name, ext];
-
-    const char *resourceDir = getenv("IAVRO_RESOURCE_DIR");
-    if (resourceDir) {
-        NSString *path = [[NSString stringWithUTF8String:resourceDir] stringByAppendingPathComponent:fileName];
-        if ([fileManager fileExistsAtPath:path]) {
-            return path;
-        }
-    }
-
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[NSBundle bundleForClass:[AvroParser class]] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];
-    if ([fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
-    return nil;
-}
+#import "AvroResourcePath.h"
 
 static AvroParser* sharedInstance = nil;
 
@@ -81,7 +51,7 @@ static AvroParser* sharedInstance = nil;
     self = [super init];
     if (self) {
         NSError *error = nil;
-        NSString *filePath = AvroParserResourcePath(@"data", @"json");
+        NSString *filePath = AvroResourcePathForFile(@"data", @"json", [AvroParser class]);
         NSData *jsonData = [NSData dataWithContentsOfFile:filePath options:NSDataReadingUncached error: &error];
 
         if (jsonData) {
@@ -232,7 +202,7 @@ static AvroParser* sharedInstance = nil;
                                         s = start - [value length];
                                         e = start;
                                     }
-                                    if(![self isExact:value heystack:fixed start:(int)s end:(int)e not:isNegative]) {
+                                    if(![self isExact:value haystack:fixed start:(int)s end:(int)e not:isNegative]) {
                                         replace = FALSE;
                                         break;
                                     }
@@ -276,7 +246,7 @@ static AvroParser* sharedInstance = nil;
 
     [output autorelease];
 
-    return output;
+    return [output precomposedStringWithCanonicalMapping];
 }
 
 - (BOOL)inString:(NSString*) str c:(unichar) c {
@@ -313,11 +283,10 @@ static AvroParser* sharedInstance = nil;
     return [self inString:_casesensitive c:c];
 }
 
-- (BOOL)isExact:(NSString*) needle heystack:(NSString*)heystack start:(int)start end:(int)end not:(BOOL)not {
-    // NSLog(@"Cut: %@", [heystack substringWithRange:NSMakeRange(start, end)]);
+- (BOOL)isExact:(NSString*) needle haystack:(NSString*)haystack start:(int)start end:(int)end not:(BOOL)not {
     int len = end - start;
-    return ((start >= 0 && end < [heystack length]
-             && [[heystack substringWithRange:NSMakeRange(start, len)] isEqualToString:needle]) ^ not);
+    return ((start >= 0 && end < [haystack length]
+             && [[haystack substringWithRange:NSMakeRange(start, len)] isEqualToString:needle]) ^ not);
 }
 
 - (unichar)smallCap:(unichar) letter {

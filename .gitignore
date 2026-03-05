@@ -18,6 +18,9 @@ DerivedData
 *.hmap
 *.xccheckout
 
+# Internal planning docs
+docs/plans/
+
 #CocoaPods
 Pods
 /Installer

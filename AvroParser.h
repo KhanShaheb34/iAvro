@@ -25,7 +25,7 @@
 - (BOOL)isPunctuation:(unichar)c;
 - (BOOL)isNumber:(unichar)c;
 - (BOOL)isCaseSensitive:(unichar)c;
-- (BOOL)isExact:(NSString*) needle heystack:(NSString*)heystack start:(int)start end:(int)end not:(BOOL)not;
+- (BOOL)isExact:(NSString*) needle haystack:(NSString*)haystack start:(int)start end:(int)end not:(BOOL)not;
 - (unichar)smallCap:(unichar) letter;
 
 @end

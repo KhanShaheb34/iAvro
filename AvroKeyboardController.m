@@ -13,10 +13,11 @@
 #import "NSString+Levenshtein.h"
 #import "AvroParser.h"
 #import "AutoCorrect.h"
+#import "AvroPreferenceKeys.h"
 
 #ifdef DEBUG
 static BOOL AvroPerfLoggingEnabled(void) {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefEnablePerfLog];
 }
 
 static double AvroPerfNowMs(void) {
@@ -80,14 +81,14 @@ static double AvroPerfNowMs(void) {
 #endif
             if (_currentCandidates && [_currentCandidates count] > 0) {
                 NSString* prevString = nil;
-                if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+                if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
                     _prevSelected = -1;
-                    prevString = [[CacheManager sharedInstance] stringForKey:[self term]];
+                    prevString = [[CacheManager sharedInstance] weightForInput:[self term]];
                 }
                 int i;
                 for (i = 0; i < [_currentCandidates count]; ++i) {
                     NSString* item = [_currentCandidates objectAtIndex:i];
-                    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"] && 
+                    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary] && 
                         _prevSelected && [item isEqualToString:prevString] ) {
                         _prevSelected = i;
                     }
@@ -96,7 +97,7 @@ static double AvroPerfNowMs(void) {
                 }
                 // Emoticons                
                 if ([_composedBuffer isEqualToString:[self term]] == NO && 
-                    [[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+                    [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
                     NSString* smily = [[AutoCorrect sharedInstance] find:_composedBuffer];
                     if (smily) {
                         [_currentCandidates insertObject:smily atIndex:0];
@@ -130,14 +131,14 @@ static double AvroPerfNowMs(void) {
         NSUserDefaults *defaultsDictionary = [NSUserDefaults standardUserDefaults];
         
         // delete and init IMKCandidates instance because setPanelType doesn't work. panelType during init is permament in macos mojave.
-        if ([[Candidates sharedInstance] panelType] != [defaultsDictionary integerForKey:@"CandidatePanelType"]) {
+        if ([[Candidates sharedInstance] panelType] != [defaultsDictionary integerForKey:kAvroPrefCandidatePanelType]) {
             [Candidates reallocate];
         }
         [[Candidates sharedInstance] updateCandidates];
         [[Candidates sharedInstance] show:kIMKLocateCandidatesBelowHint];
         if (_prevSelected > -1) {
             // IMKCandidates:selectCandidate not working here in sierra
-            // Temporary workaounrd
+            // Temporary workaround
             for (int i = 0 ; i < _prevSelected; ++i) {
                 if ([[Candidates sharedInstance] panelType] == kIMKSingleColumnScrollingCandidatePanel) {
                     [[Candidates sharedInstance] moveDown:self];
@@ -169,18 +170,18 @@ static double AvroPerfNowMs(void) {
 }
 
 - (void)candidateSelectionChanged:(NSAttributedString*)candidateString {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
         if ([self term] && [[self term] length] > 0) {
             BOOL comp = [[candidateString string] isEqualToString:[_currentCandidates objectAtIndex:0]];
             if ((comp && _prevSelected == -1) == NO) {
                 NSRange range = NSMakeRange([[self prefix] length], 
                                             [candidateString length] - ([[self prefix] length] + [[self suffix] length]));
-                [[CacheManager sharedInstance] setString:[[candidateString string] substringWithRange:range] forKey:[self term]];
-                
+                [[CacheManager sharedInstance] setWeight:[[candidateString string] substringWithRange:range] forInput:[self term]];
+
                 // Reverse Suffix Caching
-                NSArray* tmpArray = [[CacheManager sharedInstance] baseForKey:[candidateString string]];
+                NSArray* tmpArray = [[CacheManager sharedInstance] suffixBaseForCandidate:[candidateString string]];
                 if (tmpArray && [tmpArray count] > 0) {
-                    [[CacheManager sharedInstance] setString:[tmpArray objectAtIndex:1] forKey:[tmpArray objectAtIndex:0]];
+                    [[CacheManager sharedInstance] setWeight:[tmpArray objectAtIndex:1] forInput:[tmpArray objectAtIndex:0]];
                 }
             }
         }
@@ -197,7 +198,7 @@ static double AvroPerfNowMs(void) {
     
     if (_usedArrowKeys) {
         _usedArrowKeys = false;
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
             [[CacheManager sharedInstance] persist];
         }
     }
@@ -320,7 +321,7 @@ static double AvroPerfNowMs(void) {
 }
 
 - (void)insertNewline:(id)sender {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"CommitNewLineOnEnter"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefCommitNewLineOnEnter]) {
         [self commitText:@"\n"];
     }
     else {

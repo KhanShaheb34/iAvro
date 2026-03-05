@@ -20,6 +20,8 @@ xcrun clang \
   RegexParser.m \
   CacheManager.m \
   NSString+Levenshtein.m \
+  AvroPreferenceKeys.m \
+  AvroResourcePath.m \
   -lsqlite3 \
   -o build/tests/regression_runner
 

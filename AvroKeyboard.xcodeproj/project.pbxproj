@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA00010100000000000000A5 /* AvroPreferenceKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = AA00010100000000000000A2 /* AvroPreferenceKeys.m */; };
+		AA00010100000000000000A6 /* AvroResourcePath.m in Sources */ = {isa = PBXBuildFile; fileRef = AA00010100000000000000A4 /* AvroResourcePath.m */; };
 		350CECE5159C45790009F0FE /* database.db3 in Resources */ = {isa = PBXBuildFile; fileRef = 350CECD9159C45790009F0FE /* database.db3 */; };
 		350CECE9159C45790009F0FE /* regex.json in Resources */ = {isa = PBXBuildFile; fileRef = 350CECE0159C45790009F0FE /* regex.json */; };
 		350CECEB159C45790009F0FE /* RegexParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 350CECE4159C45790009F0FE /* RegexParser.m */; };
@@ -90,6 +92,10 @@
 		E93074B60A5C264700470842 /* InputMethodKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InputMethodKit.framework; path = /System/Library/Frameworks/InputMethodKit.framework; sourceTree = "<absolute>"; };
 		E93074E00A5C2F1200470842 /* AvroKeyboardController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvroKeyboardController.h; sourceTree = "<group>"; };
 		E93074E10A5C2F1200470842 /* AvroKeyboardController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AvroKeyboardController.m; sourceTree = "<group>"; };
+		AA00010100000000000000A1 /* AvroPreferenceKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvroPreferenceKeys.h; sourceTree = "<group>"; };
+		AA00010100000000000000A2 /* AvroPreferenceKeys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AvroPreferenceKeys.m; sourceTree = "<group>"; };
+		AA00010100000000000000A3 /* AvroResourcePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvroResourcePath.h; sourceTree = "<group>"; };
+		AA00010100000000000000A4 /* AvroResourcePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AvroResourcePath.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +245,10 @@
 				3553A33415A0009E00FE8491 /* CacheManager.m */,
 				359C1C6E159286750080E2FD /* Candidates.h */,
 				359C1C6F159286750080E2FD /* Candidates.m */,
+				AA00010100000000000000A1 /* AvroPreferenceKeys.h */,
+				AA00010100000000000000A2 /* AvroPreferenceKeys.m */,
+				AA00010100000000000000A3 /* AvroResourcePath.h */,
+				AA00010100000000000000A4 /* AvroResourcePath.m */,
 			);
 			name = Others;
 			sourceTree = "<group>";
@@ -359,6 +369,8 @@
 				3553A33515A0009E00FE8491 /* CacheManager.m in Sources */,
 				3528AA9C1853AFF300B8D51F /* AutoCorrectItem.m in Sources */,
 				35B6EE6D15A0C4F2004C7C9B /* NSString+Levenshtein.m in Sources */,
+				AA00010100000000000000A5 /* AvroPreferenceKeys.m in Sources */,
+				AA00010100000000000000A6 /* AvroResourcePath.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

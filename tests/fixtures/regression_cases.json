@@ -3,19 +3,47 @@
     { "input": "ami", "expected": "আমি" },
     { "input": "bangla", "expected": "বাংলা" },
     { "input": "shobdo", "expected": "শব্দ" },
-    { "input": "kintu", "expected": "কিন্তু" }
+    { "input": "kintu", "expected": "কিন্তু" },
+    { "input": "a", "expected": "আ" },
+    { "input": "k", "expected": "ক" },
+    { "input": "rri", "expected": "ঋ" },
+    { "input": "ee", "expected": "ঈ" },
+    { "input": "OI", "expected": "ঐ" },
+    { "input": "OU", "expected": "ঔ" },
+    { "input": "tth", "expected": "ত্থ" },
+    { "input": "1", "expected": "১" },
+    { "input": "0", "expected": "০" },
+    { "input": ".", "expected": "।" },
+    { "input": "..", "expected": "।।" },
+    { "input": "tumi", "expected": "তুমি" },
+    { "input": "bangladesh", "expected": "বাংলাদেশ" },
+    { "input": "amar", "expected": "আমার" },
+    { "input": "boi", "expected": "বই" },
+    { "input": "pani", "expected": "পানি" }
   ],
   "database_contains": [
     { "input": "ami", "contains": "আমি" },
     { "input": "bangla", "contains": "বাংলা" },
-    { "input": "kintu", "contains": "কিন্তু" }
+    { "input": "kintu", "contains": "কিন্তু" },
+    { "input": "shobdo", "contains": "শব্দ" },
+    { "input": "tumi", "contains": "তুমি" },
+    { "input": "bangladesh", "contains": "বাংলাদেশ" },
+    { "input": "amar", "contains": "আমার" },
+    { "input": "boi", "contains": "বই" },
+    { "input": "pani", "contains": "পানি" }
   ],
   "database_empty": [
-    "zzzzq"
+    "zzzzq",
+    "xyzxyzxyz",
+    "qqqqqq"
   ],
   "suggestion_contains": [
     { "input": "ami", "contains": "আমি" },
     { "input": "bangla", "contains": "বাংলা" },
-    { "input": "kintu", "contains": "কিন্তু" }
+    { "input": "kintu", "contains": "কিন্তু" },
+    { "input": "tumi", "contains": "তুমি" },
+    { "input": "shobdo", "contains": "শব্দ" },
+    { "input": "amar", "contains": "আমার" },
+    { "input": "pani", "contains": "পানি" }
   ]
 }
