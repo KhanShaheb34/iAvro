@@ -12,10 +12,11 @@
 #import "Database.h"
 #import "NSString+Levenshtein.h"
 #import "CacheManager.h"
+#import "AvroPreferenceKeys.h"
 
 #ifdef DEBUG
 static BOOL SuggestionPerfLoggingEnabled(void) {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefEnablePerfLog];
 }
 
 static double SuggestionPerfNowMs(void) {
@@ -99,7 +100,7 @@ static Suggestion* sharedInstance = nil;
 #ifdef DEBUG
     perfParseMs = SuggestionPerfNowMs() - parseStartMs;
 #endif
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
         // Saving humanity by reducing a few CPU cycles
 #ifdef DEBUG
         double cacheStartMs = SuggestionPerfNowMs();

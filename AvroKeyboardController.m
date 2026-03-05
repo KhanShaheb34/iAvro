@@ -13,10 +13,11 @@
 #import "NSString+Levenshtein.h"
 #import "AvroParser.h"
 #import "AutoCorrect.h"
+#import "AvroPreferenceKeys.h"
 
 #ifdef DEBUG
 static BOOL AvroPerfLoggingEnabled(void) {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefEnablePerfLog];
 }
 
 static double AvroPerfNowMs(void) {
@@ -80,14 +81,14 @@ static double AvroPerfNowMs(void) {
 #endif
             if (_currentCandidates && [_currentCandidates count] > 0) {
                 NSString* prevString = nil;
-                if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+                if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
                     _prevSelected = -1;
                     prevString = [[CacheManager sharedInstance] stringForKey:[self term]];
                 }
                 int i;
                 for (i = 0; i < [_currentCandidates count]; ++i) {
                     NSString* item = [_currentCandidates objectAtIndex:i];
-                    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"] && 
+                    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary] && 
                         _prevSelected && [item isEqualToString:prevString] ) {
                         _prevSelected = i;
                     }
@@ -96,7 +97,7 @@ static double AvroPerfNowMs(void) {
                 }
                 // Emoticons                
                 if ([_composedBuffer isEqualToString:[self term]] == NO && 
-                    [[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+                    [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
                     NSString* smily = [[AutoCorrect sharedInstance] find:_composedBuffer];
                     if (smily) {
                         [_currentCandidates insertObject:smily atIndex:0];
@@ -130,7 +131,7 @@ static double AvroPerfNowMs(void) {
         NSUserDefaults *defaultsDictionary = [NSUserDefaults standardUserDefaults];
         
         // delete and init IMKCandidates instance because setPanelType doesn't work. panelType during init is permament in macos mojave.
-        if ([[Candidates sharedInstance] panelType] != [defaultsDictionary integerForKey:@"CandidatePanelType"]) {
+        if ([[Candidates sharedInstance] panelType] != [defaultsDictionary integerForKey:kAvroPrefCandidatePanelType]) {
             [Candidates reallocate];
         }
         [[Candidates sharedInstance] updateCandidates];
@@ -169,7 +170,7 @@ static double AvroPerfNowMs(void) {
 }
 
 - (void)candidateSelectionChanged:(NSAttributedString*)candidateString {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
         if ([self term] && [[self term] length] > 0) {
             BOOL comp = [[candidateString string] isEqualToString:[_currentCandidates objectAtIndex:0]];
             if ((comp && _prevSelected == -1) == NO) {
@@ -197,7 +198,7 @@ static double AvroPerfNowMs(void) {
     
     if (_usedArrowKeys) {
         _usedArrowKeys = false;
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"IncludeDictionary"]) {
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
             [[CacheManager sharedInstance] persist];
         }
     }
@@ -320,7 +321,7 @@ static double AvroPerfNowMs(void) {
 }
 
 - (void)insertNewline:(id)sender {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"CommitNewLineOnEnter"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefCommitNewLineOnEnter]) {
         [self commitText:@"\n"];
     }
     else {

@@ -9,10 +9,11 @@
 #import "RegexParser.h"
 #import <sqlite3.h>
 #include <stdlib.h>
+#import "AvroPreferenceKeys.h"
 
 #ifdef DEBUG
 static BOOL DatabasePerfLoggingEnabled(void) {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"EnablePerfLog"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefEnablePerfLog];
 }
 
 static double DatabasePerfNowMs(void) {

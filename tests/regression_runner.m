@@ -4,6 +4,7 @@
 #import "AvroParser.h"
 #import "Database.h"
 #import "Suggestion.h"
+#import "AvroPreferenceKeys.h"
 
 static NSUInteger gFailures = 0;
 
@@ -98,8 +99,8 @@ int main(int argc, const char * argv[]) {
         }
         setenv("HOME", [tempHome UTF8String], 1);
 
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"IncludeDictionary"];
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"EnablePerfLog"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kAvroPrefIncludeDictionary];
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kAvroPrefEnablePerfLog];
 
         NSString *fixturePath = @"tests/fixtures/regression_cases.json";
         if (argc > 1) {

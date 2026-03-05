@@ -6,6 +6,7 @@
 //
 
 #import "Candidates.h"
+#import "AvroPreferenceKeys.h"
 
 static Candidates *_sharedInstance = nil;
 static IMKServer *_server = nil;
@@ -15,7 +16,7 @@ static IMKServer *_server = nil;
 + (void)allocateSharedInstanceWithServer:(IMKServer *)server {
     if (_sharedInstance == nil) {
         _server = server;
-        _sharedInstance = [[self alloc] initWithServer:server panelType:[[NSUserDefaults standardUserDefaults] integerForKey:@"CandidatePanelType"]];
+        _sharedInstance = [[self alloc] initWithServer:server panelType:[[NSUserDefaults standardUserDefaults] integerForKey:kAvroPrefCandidatePanelType]];
         [_sharedInstance setAttributes:[NSDictionary 
                                         dictionaryWithObject:[NSNumber numberWithBool:YES] 
                                         forKey:IMKCandidatesSendServerKeyEventFirst]];
