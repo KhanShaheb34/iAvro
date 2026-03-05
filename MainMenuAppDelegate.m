@@ -39,11 +39,8 @@
     [AutoCorrect sharedInstance];
 }
 
-// Currently doesn't work
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:kAvroPrefIncludeDictionary]) {
-        [[CacheManager sharedInstance] persist];
-    }
+    [[CacheManager sharedInstance] persist];
 }
 
 @end
