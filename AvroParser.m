@@ -285,7 +285,7 @@ static AvroParser* sharedInstance = nil;
 
 - (BOOL)isExact:(NSString*) needle haystack:(NSString*)haystack start:(int)start end:(int)end not:(BOOL)not {
     int len = end - start;
-    return ((start >= 0 && end < [haystack length]
+    return ((start >= 0 && len >= 0 && end <= (int)[haystack length]
              && [[haystack substringWithRange:NSMakeRange(start, len)] isEqualToString:needle]) ^ not);
 }
 

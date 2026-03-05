@@ -19,16 +19,16 @@ NSString *AvroResourcePathForFile(NSString *name, NSString *ext, Class bundleCla
         }
     }
 
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
-    if (path && [fileManager fileExistsAtPath:path]) {
-        return path;
-    }
-
     if (bundleClass) {
-        path = [[NSBundle bundleForClass:bundleClass] pathForResource:name ofType:ext];
+        NSString *path = [[NSBundle bundleForClass:bundleClass] pathForResource:name ofType:ext];
         if (path && [fileManager fileExistsAtPath:path]) {
             return path;
         }
+    }
+
+    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:ext];
+    if (path && [fileManager fileExistsAtPath:path]) {
+        return path;
     }
 
     path = [[[fileManager currentDirectoryPath] stringByAppendingPathComponent:name] stringByAppendingPathExtension:ext];

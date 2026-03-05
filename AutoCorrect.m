@@ -27,7 +27,7 @@ static AutoCorrect* sharedInstance = nil;
         sharedInstance = [super allocWithZone:zone];
         return sharedInstance;  // assignment and return on first allocation
     }
-    return sharedInstance; //on subsequent allocation attempts return nil
+    return sharedInstance; //on subsequent allocation attempts return existing singleton
 }
 
 - (id)copyWithZone:(NSZone *)zone {
