@@ -28,7 +28,8 @@ The original iAvro was built for Intel Macs and will stop working in upcoming ma
 1. Download the latest `.tar.gz` from the [Releases](../../releases) page.
 2. Extract to get `Avro Silicon.app`.
 3. Copy it to `~/Library/Input Methods/`.
-4. Open **System Settings > Keyboard > Input Sources** and add **Avro Silicon** under Bangla.
+4. Run this command in your terminal: `xattr -d com.apple.quarantine ~/Library/Input\ Methods/Avro\ Silicon.app`
+5. Open **System Settings > Keyboard > Input Sources** and add **Avro Silicon** under Bangla.
 
 ### From Source
 
